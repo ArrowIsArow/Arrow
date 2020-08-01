@@ -1,0 +1,357 @@
+const http = require('http');
+const express = require('express');
+const ms = require("ms");
+const app = express();
+app.get("/", (request, response) => {
+    response.sendStatus(200);
+});
+app.listen(process.env.PORT);
+setInterval(() => {
+    http.get(`https://bot-dm-by-alexandru21.glitch.me/`); /// حط اسم المشروع تبعك name تعديل مهم بدل
+}, 280000);
+
+// بكجات
+const Discord = require("discord.js");
+const {
+    YT_API_KEY,
+    prefix,
+    devs
+} = require('./config')
+const client = new Discord.Client({
+    disableEveryone: false
+})
+client.login(process.env.BOT_TOKEN);
+client.on('ready', () => {
+    console.log(`Logged in as ${client.user.tag}!`);
+
+});
+
+
+//كود البرودكاست
+
+client.on("message", async message => {
+    if (!message.guild || message.author.bot) return;
+    if (!message.content.startsWith(prefix)) return;
+    if (message.content.startsWith(prefix + "go")) {
+        if (!message.member.hasPermission("ADMINISTRATOR")) return message.reply('You dont have Permissions.');
+        if (message.guild.interval) return message.reply('**Another stream running, please wait for it to end**')
+        let args = message.content
+            .split(" ")
+            .slice(1)
+            .join(" ");
+        if (!args)
+            return message.reply('**Please send a message after the command to send it**');
+
+        message.channel
+            .send(
+                ">>> **[1] all member \n[2] online member\n[3] privite ranks\n[0] delet cmd**"
+            )
+            .then(m => {
+                message.channel
+                    .awaitMessages(msg => msg.author.id === message.author.id, {
+                        max: 1,
+                        time: 1000 * 60 * 2,
+                        errors: ["time"]
+                    })
+                    .then(async (c) => {
+                        var members = null;
+                        if (c.first().content === "1") {
+                            members = message.guild.members.array();
+                            c.first().delete().catch (err => null);
+                            m.delete().catch (err => null);
+                        }
+                        if (c.first().content === "2") {
+                            members = message.guild.members
+                                .filter(m => m.presence.status !== "offline").array();
+
+                            c.first().delete().catch (err => null);
+                            m.delete().catch (err => null);
+                        }
+                        if (c.first().content == "0") {
+                            c.first().delete().catch (err => null);
+                            m.delete().catch (err => null);
+                            message.channel.send("**Successfully canceled **");
+                        }
+                        if (c.first().content === "3") {
+                            m.edit("**>>> Please enter the rank name **").then(ms => {
+                                message.channel
+                                    .awaitMessages(msg => msg.author.id === message.author.id, {
+                                        max: 1,
+                                        time: 1000 * 60 * 2,
+                                        errors: ["time"]
+                                    })
+                                    .then(async collected => {
+                                        let role = message.guild.roles.find(
+                                            role => role.name === collected.first().content
+                                        );
+                                        if (!role)
+                                            return message.channel
+                                                .send("**:x: I can't find the rank of the message**")
+                                                .then(() => {
+                                                    ms.delete().catch (err => null);
+                                                    collected.first().delete().catch (err => null);
+                                                });
+
+                                        let roleID = role.id;
+                                        members = message.guild.roles.get(roleID).members.array();
+                                        if (members == null) return message.reply('**member not fun**');
+                                        if (members.length == 0) return message.reply('**The number was not found.**');
+                                        else {
+                                            const msg = await message.channel.send(`**Sending message to ${members.length} member...**`)
+                                            var count = 0;
+                                            var ycount = 0;
+                                            var xcount = 0;
+                                            message.guild.interval = await setInterval(() => {
+                                                if (!members[count]) {
+                                                    clearInterval(message.guild.inter);
+                                                    msg.edit(new Discord.RichEmbed().setDescription(`** :mailbox_with_mail:  ؛ The message has been sent to  ${ycount} member\n:lock: ؛ I could not send the message to ${xcount} member**`).setTimestamp());
+                                                    message.guild.interval = false;
+                                                } else if (!members[count].user.bot) {
+                                                    members[count].send(`${args}`).then(() => {
+                                                        ycount++;
+                                                    }).catch(err => {
+                                                        return xcount++;
+                                                    });
+                                                }
+                                                count++;
+                                            }, 500)
+                                        }
+                                        collected.first().delete();
+                                        m.delete();
+                                    }).catch(err => {
+                                        return ms.delete().catch (err => null);
+                                    })
+                            });
+                        };
+                        if (['1', '2'].includes(c.first().content)) {
+                            if (members == null) return message.reply('**invalid number**');
+                            if (members.length == 0) return message.reply('**The number was not found.**');
+                            else {
+                                const msg = await message.channel.send(`**Sending message to ${members.length} member...**`)
+                                var count = 0;
+                                var ycount = 0;
+                                var xcount = 0;
+                                message.guild.interval = await setInterval(() => {
+                                    if (!members[count]) {
+                                        clearInterval(message.guild.inter);
+                                        msg.edit(new Discord.RichEmbed().setDescription(`** :mailbox_with_mail:  ; The message has been sent to  ${ycount} Member\n:lock: ؛I could not send the message to ${xcount} Member**`).setTimestamp());
+                                        message.guild.interval = false;
+                                    } else if (!members[count].user.bot) {
+                                        members[count].send(`${args}`).then(() => {
+                                            ycount++;
+                                        }).catch(err => {
+                                            return xcount++;
+                                        });
+                                    }
+                                    count++;
+                                }, 500)
+                            }
+                        }
+
+
+                    })
+                    .catch((err) => {
+                        return m.delete().catch (err => null);
+                    });
+            });
+    } else if (message.content.startsWith(prefix + "setname")) {
+        let args = message.content
+            .split(" ")
+            .slice(1)
+            .join(" ");
+        if (!message.author.id === "617119461668946034") return; ///
+        client.user.setUsername(args);
+        message.channel.send(`The name has been changed to ..**${args}** `);
+    } else if (message.content.startsWith(prefix + "setavatar")) {
+        let args = message.content
+            .split(" ")
+            .slice(1)
+            .join(" ");
+        if (!message.author.id === "617119461668946034") return; /// 
+        client.user.setAvatar(args).catch(err => message.reply("send a valid url"));
+        message.channel.send(`The image has been changed to :**${args}** `);
+    }
+});
+
+///تغير الحالة
+
+client.on("ready", () => {
+    console.log(`Logged in as ${client.user.tag}!`);
+});
+client.on("ready", () => {
+    client.user.setStatus("online"); ///Important color status change
+});
+client.on("ready", () => {
+    client.user.setActivity(`<go`, { ///Important adjustment of the bot condition
+        type: "watching"
+    }); ///تعديل حالة البوت
+});
+
+//online
+//idle
+//dnd
+//offline
+
+client.on('ready', () => {
+  console.log('I am ready!');
+});
+
+client.on('message', message => {
+  // Ignore messages that aren't from a guild
+  if (!message.guild) return;
+
+  // If the message content starts with "!kick"
+  if (message.content.startsWith('<kick')) {
+    // Assuming we mention someone in the message, this will return the user
+    // Read more about mentions over at https://discord.js.org/#/docs/main/master/class/MessageMentions
+    const user = message.mentions.users.first();
+    // If we have a user mentioned
+    if (user) {
+      // Now we get the member from the user
+      const member = message.guild.member(user);
+      // If the member is in the guild
+      if (member) {
+        /**
+         * Kick the member
+         * Make sure you run this on a member, not a user!
+         * There are big differences between a user and a member
+         */
+        member
+          .kick('Optional reason that will display in the audit logs')
+          .then(() => {
+            // We let the message author know we were able to kick the person
+            message.reply(`Successfully kicked ${user.tag}`);
+          })
+          .catch(err => {
+            // An error happened
+            // This is generally due to the bot not being able to kick the member,
+            // either due to missing permissions or role hierarchy
+            message.reply('I was unable to kick the member');
+            // Log the error
+            console.error(err);
+          });
+      } else {
+        // The mentioned user isn't in this guild
+        message.reply("That user isn't in this guild!");
+      }
+      // Otherwise, if no user was mentioned
+    } else {
+      message.reply("You didn't mention the user to kick!");
+    }
+  }
+});
+
+
+
+
+
+/**
+ * The ready event is vital, it means that only _after_ this will your bot start reacting to information
+ * received from Discord
+ */
+client.on('ready', () => {
+  console.log('I am ready!');
+});
+
+client.on('message', message => {
+  // Ignore messages that aren't from a guild
+  if (!message.guild) return;
+
+  // if the message content starts with "!ban"
+  if (message.content.startsWith('<ban')) {
+    // Assuming we mention someone in the message, this will return the user
+    // Read more about mentions over at https://discord.js.org/#/docs/main/master/class/MessageMentions
+    const user = message.mentions.users.first();
+    // If we have a user mentioned
+    if (user) {
+      // Now we get the member from the user
+      const member = message.guild.member(user);
+      // If the member is in the guild
+      if (member) {
+        /**
+         * Ban the member
+         * Make sure you run this on a member, not a user!
+         * There are big differences between a user and a member
+         * Read more about what ban options there are over at
+         * https://discord.js.org/#/docs/main/master/class/GuildMember?scrollTo=ban
+         */
+        member
+          .ban({
+            reason: 'They were bad!',
+          })
+          .then(() => {
+            // We let the message author know we were able to ban the person
+            message.reply(`Successfully banned ${user.tag}`);
+          })
+          .catch(err => {
+            // An error happened
+            // This is generally due to the bot not being able to ban the member,
+            // either due to missing permissions or role hierarchy
+            message.reply('I was unable to ban the member');
+            // Log the error
+            console.error(err);
+          });
+      } else {
+        // The mentioned user isn't in this guild
+        message.reply("That user isn't in this guild!");
+      }
+    } else {
+      // Otherwise, if no user was mentioned
+      message.reply("You didn't mention the user to ban!");
+    }
+  }
+});
+
+
+
+const PREFIX = '<';
+
+
+client.on('ready', () => {
+    console.log('This bot is active!');
+})
+
+client.on('message', message => {
+    let args = message.content.substring(PREFIX.length).split(" ");
+
+    switch (args[0]) {
+        case 'mute':
+            var person  = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[1]));
+            if(!person) return  message.reply("I CANT FIND THE USER " + person)
+
+            let mainrole = message.guild.roles.find(role => role.name === "⦁ Member");
+            let role = message.guild.roles.find(role => role.name === "Muted");
+           
+
+            if(!role) return message.reply("Couldn't find the mute role.")
+
+
+            let time = args[2];
+            if(!time){
+                return message.reply("You didnt specify a time!");
+            }
+
+            person.removeRole(mainrole.id)
+            person.addRole(role.id);
+
+
+            message.channel.send(`@${person.user.tag} has now been muted for ${ms(ms(time))}`)
+
+            setTimeout(function(){
+                
+                person.addRole(mainrole.id)
+                person.removeRole(role.id);
+                console.log(role.id)
+                message.channel.send(`@${person.user.tag} has been unmuted.`)
+            }, ms(time));
+
+
+    
+        break;
+    }
+
+
+});
+
+            
+                        
